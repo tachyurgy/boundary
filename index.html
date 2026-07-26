@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Boundary — an authorization harness for multi-tenant PHI</title>
+<meta name="description" content="A product-security test harness that enumerates every actor, object and action to find broken object-level authorization, cross-tenant leakage and k-anonymity failures in a multi-tenant clinical platform.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;550;650&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="base.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔐</text></svg>">
+<style>
+  :root { --accent:#7fd1c4; --accent-dim:#217a6d; --accent-ink:#021916; --bg:#0a1010; --panel:#131b1b; --panel-2:#192424; --line:#212e2e; }
+  input[type=checkbox]{ accent-color: var(--rose); }
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="top-inner">
+    <div class="brand"><h1>Boundary</h1><span class="tag">authorization test harness</span></div>
+    <div class="top-spacer"></div>
+    <div class="clockline">8 actors · 14 objects · 4 actions · 2 tenants</div>
+  </div>
+</header>
+
+<div class="wrap">
+  <p class="lede">
+    Broken object-level authorization is the most common serious flaw in multi-tenant products and
+    the hardest to catch, because every exploiting request is well-formed, authenticated, and returns
+    a clean 200. No scanner finds it. The only reliable method is to enumerate the cross product of
+    actors, objects and actions and compare what the system <em>does</em> against what policy
+    <em>says</em> — which is what this runs, against a clinical platform where the objects are PHI.
+  </p>
+
+  <div class="metrics" id="metrics"></div>
+
+  <div class="cols">
+    <div>
+      <div class="panel">
+        <h2>Injected defects</h2>
+        <div id="defects"></div>
+      </div>
+      <div class="panel">
+        <h2>Findings <span class="h2spacer"></span><span class="count" id="fCount"></span></h2>
+        <div class="controls" id="sevFilter">
+          <button class="primary" data-s="all">All</button>
+          <button data-s="critical">Critical</button>
+          <button data-s="high">High</button>
+          <button data-s="medium">Medium</button>
+        </div>
+        <div class="list" id="findings"></div>
+      </div>
+    </div>
+    <div class="panel">
+      <h2>Finding detail</h2>
+      <div id="detail"></div>
+    </div>
+  </div>
+
+  <footer class="foot">
+    <p style="margin:0 0 9px"><strong>How it is built.</strong>
+      Policy in <code>authz.js</code> is written as predicates over <code>(actor, object)</code> rather
+      than a role-permission grid, because nearly every real rule here is relational: a provider may
+      read a note <em>they authored for a client on their panel</em>, and no amount of role checking
+      expresses that. The harness treats policy as the oracle and the implementation as the thing
+      under test, so a pass is not &ldquo;no error&rdquo; — it is &ldquo;denied exactly what policy
+      denies&rdquo;. Severity is derived rather than assigned: PHI raises it, and PHI crossing a
+      tenant boundary makes it critical.</p>
+    <p style="margin:0">The k-anonymity rule is the one worth arguing for. An employer admin can see
+      utilization aggregates for their own population, but only above a cohort floor — below it a
+      &ldquo;report&rdquo; tells an employer which of their employees sought mental health care. That
+      is a privacy failure that every role check in the system would happily authorise, which is why
+      it belongs in policy and in the harness rather than in someone's judgement. All actors,
+      organizations and records are fabricated.</p>
+  </footer>
+</div>
+<script type="module" src="app.js"></script>
+</body>
+</html>
